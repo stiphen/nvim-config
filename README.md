@@ -1,4 +1,4 @@
-# nvim-config for linux or macos platform 
+# nvim-config for Linux or MacOS platforms
 
 Make new .nvim folder in ```~/.config/``` <br />
 ```mkdir ~/.config/nvim/``` <br />
