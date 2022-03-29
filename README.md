@@ -13,32 +13,38 @@ set encoding=utf-8
 set number
 set noswapfile
 set scrolloff=7
-
 set tabstop=4
 set softtabstop=4
 set shiftwidth=4
 set expandtab
 set autoindent
 set fileformat=unix
-filetype indent on      " load filetype-specific indent files
-
+filetype plugin indent on " load filetype-specific indent files
+syntax on
+set colorcolumn=79
 inoremap jk <esc>
+map gn :bn<cr>
+map gp :bp<cr>
+map gw :Bclose<cr>
 
 
 call plug#begin('~/.vim/plugged')
 
+" Base
 Plug 'neovim/nvim-lspconfig'
 Plug 'hrsh7th/nvim-cmp'
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'saadparwaiz1/cmp_luasnip'
 Plug 'L3MON4D3/LuaSnip'
+Plug 'junegunn/fzf' " fzf is a general-purpose command-line fuzzy finder
 
-" Standart 
 Plug 'https://github.com/jiangmiao/auto-pairs'
 Plug 'https://github.com/preservim/nerdtree'
 Plug 'https://github.com/preservim/nerdcommenter'
 Plug 'https://github.com/vim-airline/vim-airline'
 
+
+" Additional
 Plug 'https://github.com/tpope/vim-commentary' " For Commenting gcc & gc
 Plug 'https://github.com/preservim/tagbar' " Tagbar for code navigation
 Plug 'http://github.com/tpope/vim-surround' " Surrounding ysw)
@@ -58,9 +64,7 @@ Plug 'maxmellon/vim-jsx-pretty'
 Plug 'kana/vim-operator-user'
 Plug 'haya14busa/vim-operator-flashy'
 
-
 call plug#end()
-
 
 colorscheme gruvbox
 " colorscheme OceanicNext
@@ -81,6 +85,62 @@ endif
 " turn off search highlight
 nnoremap ,<space> :nohlsearch<CR>
 
+" Ctrl-j/k deletes blank line below/above, and Alt-j/k inserts.
+nnoremap <silent><C-j> m`:silent +g/\m^\s*$/d<CR>``:noh<CR>
+nnoremap <silent><C-k> m`:silent -g/\m^\s*$/d<CR>``:noh<CR>
+nnoremap <silent><A-j> :set paste<CR>m`o<Esc>``:set nopaste<CR>
+nnoremap <silent><A-k> :set paste<CR>m`O<Esc>``:set nopaste<CR>
+
+" Python settings
+" Подсвечиваем все что можно подсвечивать
+let python_highlight_all = 1
+
+" Удобное поведение backspace
+set backspace=indent,eol,start whichwrap+=<,>,[,]
+
+" В .py файлах включаем умные отступы после ключевых слов
+autocmd BufRead *.py set smartindent cinwords=if,elif,else,for,while,try,except,finally,def,class
+
+" On Linux set 
+set clipboard+=unnamedplus
+vmap <C-c> "+y
+set go+=a               " Visual selection automatically copied to the clipboard
+
+" Copy to clipboard
+vnoremap  <leader> y  "+y
+nnoremap  <leader> Y  "+yg_
+nnoremap  <leader> y  "+y
+nnoremap  <leader> yy "+yy
+
+" Naviagtion between opened windows in termanal
+map <C-h> <C-W>h
+map <C-l> <C-W>l
+
+" Если файл уже открыт в vim, то перейти к нужному буферу
+let g:fzf_buffers_jump = 1  
+
+" Плагин fzf горячие клавиши для файлов и буферов
+noremap <C-a> :Files<CR>
+noremap <C-p> :Buffers<CR> 
+
+
+
+" Автостарт плагина для некоторых типов файлов
+autocmd VimEnter *.py,*.pl,*.js,*.php,*.md TagbarToggle  
+
+" Компактный вид у тагбара     
+let g:tagbar_compact = 1  
+
+" Откытая сортировка по имени у тагбара (мне хронология важнее) 
+let g:tagbar_sort = 0
+
+" Disabled arrows for navigation!!!
+nnoremap <Left> :echoe "Use h"<CR>
+nnoremap <Right> :echoe "Use l"<CR>
+nnoremap <Up> :echoe "Use k"<CR>
+nnoremap <Down> :echoe "Use j"<CR>
+
+" Extra settings
 lua << EOF
 -- Set completeopt to have a better completion experience
 vim.o.completeopt = 'menuone,noselect'
@@ -137,6 +197,8 @@ cmp.setup {
 EOF
 
 
+
+
 lua << EOF
 local nvim_lsp = require('lspconfig')
 
@@ -161,7 +223,7 @@ local on_attach = function(client, bufnr)
   buf_set_keymap('n', '<C-k>', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
   buf_set_keymap('n', '<space>wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', opts)
   buf_set_keymap('n', '<space>wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts)
-  buf_set_keymap('n', '<space>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders)))<CR>', opts)
+  buf_set_keymap('n', '<space>wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
   buf_set_keymap('n', '<space>D', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
   buf_set_keymap('n', '<space>rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
   buf_set_keymap('n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
@@ -263,21 +325,15 @@ command! -bang -complete=buffer -nargs=? Bclose call <SID>Bclose(<q-bang>, <q-ar
 nnoremap <silent> <Leader>bd :Bclose<CR>
 
 
-map gn :bn<cr>
-map gp :bp<cr>
-map gw :Bclose<cr>
-
-set colorcolumn=79 " color vertical line 
 
 " run current script with python3 by CTRL+R in command and insert mode
 autocmd FileType python map <buffer> <C-r> :w<CR>:exec '!python3' shellescape(@%, 1)<CR>
-autocmd FileType python imap <buffer> <C-r> <esc>:w<CR>:exec '!python3' shellescape(@%, 1)<CR>(
+autocmd FileType python imap <buffer> <C-r> <esc>:w<CR>:exec '!python3' shellescape(@%, 1)<CR>
 
 " NERD Toggle keys
 nnoremap <C-f> :NERDTreeFocus<CR>
 nnoremap <C-n> :NERDTree<CR>
 nnoremap <C-t> :NERDTreeToggle<CR>
-" nnoremap <C-l> :call CocActionAsync('jumpDefinition')<CR>
 
 " Hotkeys
 nmap <F8> :TagbarToggle<CR>
@@ -302,39 +358,4 @@ let g:airline_right_alt_sep = ''
 let g:airline_symbols.branch = ''
 let g:airline_symbols.readonly = ''
 let g:airline_symbols.linenr = ''
-
-
-" Ctrl-j/k deletes blank line below/above, and Alt-j/k inserts.
-nnoremap <silent><C-j> m`:silent +g/\m^\s*$/d<CR>``:noh<CR>
-nnoremap <silent><C-k> m`:silent -g/\m^\s*$/d<CR>``:noh<CR>
-nnoremap <silent><A-j> :set paste<CR>m`o<Esc>``:set nopaste<CR>
-nnoremap <silent><A-k> :set paste<CR>m`O<Esc>``:set nopaste<CR>
-
-" Python settings
-" Подсвечиваем все что можно подсвечивать
-let python_highlight_all = 1
-" В .py файлах включаем умные отступы после ключевых слов
-autocmd BufRead *.py set smartindent cinwords=if,elif,else,for,while,try,except,finally,def,class
-" Удобное поведение backspace
-set backspace=indent,eol,start whichwrap+=<,>,[,]
-
-filetype plugin indent on
-syntax on
-
-" On Windows set
-set clipboard+=unnamed  " use the clipboards of vim and win
-
-" On Linux set 
-set clipboard+=unnamedplus
-
-
-vmap <C-c> "+y
-set paste               " Paste from a windows or from vim
-set go+=a               " Visual selection automatically copied to the clipboard
-
-" Copy to clipboard
-vnoremap  <leader> y  "+y
-nnoremap  <leader> Y  "+yg_
-nnoremap  <leader> y  "+y
-nnoremap  <leader> yy "+yy
 ```
