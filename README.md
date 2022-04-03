@@ -8,7 +8,7 @@ Install pyright <br />
  <br />
 
 ```
-set mouse=a  " enable mouse
+set mouse=a                 " enable mouse
 set encoding=utf-8
 set number
 set noswapfile
@@ -19,16 +19,24 @@ set shiftwidth=4
 set expandtab
 set autoindent
 set fileformat=unix
-filetype plugin indent on " load filetype-specific indent files
+set hlsearch                " highlight all search results 
+set cursorline
+set splitbelow splitright " set default position for where a split open
+filetype plugin indent on   " load filetype-specific indent files
 syntax on
 set colorcolumn=79
 inoremap jk <esc>
+
 map gn :bn<cr>
 map gp :bp<cr>
 map gw :Bclose<cr>
 
+" keybindings 
+" leader key
+let mapleader=" "
 
-call plug#begin('~/.vim/plugged')
+
+call plug#begin('~/.config/nvim/plugged')
 
 " Base
 Plug 'neovim/nvim-lspconfig'
@@ -36,12 +44,12 @@ Plug 'hrsh7th/nvim-cmp'
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'saadparwaiz1/cmp_luasnip'
 Plug 'L3MON4D3/LuaSnip'
-Plug 'junegunn/fzf' " fzf is a general-purpose command-line fuzzy finder
+Plug 'junegunn/fzf'         " fzf is a general-purpose command-line fuzzy finder
 
 Plug 'https://github.com/jiangmiao/auto-pairs'
 Plug 'https://github.com/preservim/nerdtree'
 Plug 'https://github.com/preservim/nerdcommenter'
-Plug 'https://github.com/vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline'
 
 
 " Additional
@@ -325,10 +333,25 @@ command! -bang -complete=buffer -nargs=? Bclose call <SID>Bclose(<q-bang>, <q-ar
 nnoremap <silent> <Leader>bd :Bclose<CR>
 
 
+" run current script with python3 by CTRL+S in command and insert mode
+autocmd FileType python map <buffer> <C-s> :w<CR>:exec '!python3' shellescape(@%, 1)<CR>
+autocmd FileType python imap <buffer> <C-s> <esc>:w<CR>:exec '!python3' shellescape(@%, 1)<CR>
 
-" run current script with python3 by CTRL+R in command and insert mode
-autocmd FileType python map <buffer> <C-r> :w<CR>:exec '!python3' shellescape(@%, 1)<CR>
-autocmd FileType python imap <buffer> <C-r> <esc>:w<CR>:exec '!python3' shellescape(@%, 1)<CR>
+augroup exe_code
+    autocmd!
+    "execute python code 
+    autocmd FileType python nnoremap <buffer> <leader>r
+            \ :sp<CR> :term python3 %<CR> :startinsert<CR>
+
+    "execute javascript code 
+    autocmd FileType javascript nnoremap <buffer> <leader>r
+            \ :sp<CR> :term nodejs %<CR> :startinsert<CR>
+
+    "execute bash code 
+    autocmd FileType bash,sh nnoremap <buffer> <leader>r
+            \ :sp<CR> :term bash %<CR> :startinsert<CR>
+
+augroup END
 
 " NERD Toggle keys
 nnoremap <C-f> :NERDTreeFocus<CR>
@@ -340,11 +363,17 @@ nmap <F8> :TagbarToggle<CR>
 
 set completeopt-=preview " For No Previews
 
+" NETD settings
 let g:NERDTreeDirArrowExpandable="+"
 let g:NERDTreeDirArrowCollapsible="~"
 
 " air-line
 let g:airline_powerline_fonts = 1
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#left_sep = ' '
+let g:airline#extensions#tabline#left_alt_sep = '|'
+set noshowmode " hide --insert status lien
+" let g:airline_theme = 'base16_tomorrow'
 
 if !exists('g:airline_symbols')
     let g:airline_symbols = {}
@@ -358,4 +387,5 @@ let g:airline_right_alt_sep = ''
 let g:airline_symbols.branch = ''
 let g:airline_symbols.readonly = ''
 let g:airline_symbols.linenr = ''
+
 ```
